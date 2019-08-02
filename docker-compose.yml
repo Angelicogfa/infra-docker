@@ -1,0 +1,49 @@
+version: '3'
+
+networks: 
+  proxynet:
+
+volumes:
+  elasticsearch-data:
+
+services:
+  proxy:
+    build:
+      context: ./proxy
+    container_name: proxy
+    ports:
+      - 80:80
+    networks: 
+      - proxynet
+    depends_on: 
+      - sonarqube
+      - elasticsearch
+      - kibana
+    links: 
+      - sonarqube
+      - elasticsearch
+      - kibana
+  
+  sonarqube:
+    image: sonarqube
+    container_name: sonar
+    networks: 
+      - proxynet
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    container_name: elasticsearch
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks: 
+      - proxynet
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.2.4
+    container_name: kibana
+    depends_on: 
+      - elasticsearch
+    links: 
+      - elasticsearch
+    networks: 
+      - proxynet
